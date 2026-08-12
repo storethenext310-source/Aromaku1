@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  
+  <link rel="manifest" href="manifest.json">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Parfum - POS, HPP & Supplier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --brand: #2563eb;
+            --brand-dark: #1d4ed8;
+            --brand-soft: #eff6ff;
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #e5e7eb;
+            --surface: #ffffff;
+            --bg: #f5f7fb;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #f59e0b;
+            --radius: 16px;
+            --shadow: 0 8px 28px rgba(15, 23, 42, .07);
+        }
+        * { box-sizing: border-box; }
+        body {
+            background: linear-gradient(180deg, #f8faff 0, var(--bg) 260px);
+            color: var(--ink);
+            font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #0f172a, #172554) !important;
+            min-height: 66px;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .navbar-brand { font-weight: 800; letter-spacing: -.3px; }
+        .navbar-brand i { color: #60a5fa; }
+        .nav-link {
+            cursor: pointer;
+            color: rgba(255,255,255,.72) !important;
+            border-radius: 10px;
+            margin: 4px 2px;
+            transition: .2s ease;
+            font-size: .92rem;
+        }
+        .nav-link:hover, .nav-link.active { color:#fff !important; background:rgba(255,255,255,.10); }
+        .nav-grid {
+            display:grid;
+            grid-template-columns:repeat(3,minmax(105px,1fr));
+            gap:4px;
+            width:min(520px,100%);
+            margin-left:auto;
+        }
+        .nav-grid .nav-link {
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            min-height:40px;
+            margin:0;
+            padding:7px 10px !important;
+        }
+        .nav-grid .nav-link i { width:18px; }
+        .container-fluid.my-4 { max-width: 1500px; }
+        .card {
+            border: 1px solid rgba(226,232,240,.85) !important;
+            border-radius: var(--radius) !important;
+            box-shadow: var(--shadow) !important;
+            overflow: hidden;
+        }
+        .card-body { padding: 1.25rem; }
+        .card-title { color: var(--ink); font-weight: 800; letter-spacing: -.2px; }
+        .btn { border-radius: 10px; font-weight: 600; }
+        .btn-primary { background: var(--brand); border-color: var(--brand); }
+        .btn-primary:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+        .btn-success { background: var(--success); border-color: var(--success); }
+        .table { margin-bottom: 0; }
+        .table > :not(caption) > * > * { padding: .85rem .8rem; border-bottom-color: #eef2f7; }
+        .table-dark { --bs-table-bg: #172033; --bs-table-color:#fff; }
+        .table thead th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+        .table tbody tr { transition: .18s ease; }
+        .table tbody tr:hover { background: #f8fbff; }
+        .tab-content { display: none; animation: fadeIn .2s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from{opacity:.3;transform:translateY(3px)} to{opacity:1;transform:none} }
+        .note-card { border-left: 4px solid var(--brand); }
+        .family-card { border-top: 4px solid #6f42c1; }
+        .profit-badge { font-weight: bold; }
+        .positive-profit { color: green; }
+        .negative-profit { color: red; }
+        .modal-content { border:0; border-radius:18px; box-shadow:0 24px 70px rgba(15,23,42,.22); overflow:hidden; }
+        .modal-header { padding: 1rem 1.25rem; }
+        .modal-title { font-weight:800; }
+        .modal-body { padding:1.25rem; }
+        .modal-footer { padding: .9rem 1.25rem; background:#fafbfc; border-top:1px solid #edf0f4; }
+        .form-label { color:#293244; margin-bottom:.42rem; }
+        .form-control, .form-select {
+            min-height: 46px;
+            border:1px solid #dbe2ea;
+            border-radius:10px;
+            box-shadow:none !important;
+        }
+        .form-control:focus, .form-select:focus { border-color:#60a5fa; box-shadow:0 0 0 .2rem rgba(37,99,235,.10) !important; }
+        textarea.form-control { min-height: unset; }
+        .formula-item {
+            background:#f8fafc;
+            border:1px solid #e2e8f0;
+            border-radius:12px;
+            padding:10px;
+            transition:.18s ease;
+        }
+        .formula-item:hover { border-color:#bfdbfe; background:#f8fbff; }
+        .formula-item .input-group-text { background:#fff; border-color:#dbe2ea; font-weight:700; }
+        .formula-item .form-control { background:#fff; }
+        .formula-empty { border:1px dashed #cbd5e1; border-radius:14px; padding:20px; text-align:center; color:var(--muted); background:#f8fafc; }
+        .formula-summary { border-radius:14px; padding:16px; border:1px solid #dbeafe; background:linear-gradient(135deg,#eff6ff,#fff); }
+        .formula-total-number { font-size:1.55rem; font-weight:900; }
+        .formula-total-bar { height:8px; border-radius:99px; background:#e5e7eb; overflow:hidden; }
+        .formula-total-fill { height:100%; width:0; border-radius:99px; transition:.2s ease; }
+        .action-btns { display:flex; gap:6px; flex-wrap:wrap; }
+        .stat-card { position:relative; overflow:hidden; border:0 !important; }
+        .stat-card::after { content:""; position:absolute; width:110px; height:110px; border-radius:50%; right:-35px; top:-35px; background:rgba(255,255,255,.10); }
+
+        /* ===== PROFESSIONAL PERFUMERY FORMULA ===== */
+        .formula-pro-header { display:flex; align-items:center; gap:12px; padding:12px 14px; border:1px solid #dbeafe; border-radius:14px; background:linear-gradient(135deg,#eff6ff,#ffffff); }
+        .formula-pro-icon { width:42px; height:42px; border-radius:12px; display:grid; place-items:center; background:#2563eb; color:#fff; flex:0 0 auto; }
+        .formula-section-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.07em; color:#64748b; font-weight:800; margin-bottom:8px; }
+        .material-row { border:1px solid #e2e8f0; border-radius:13px; padding:10px; background:#fff; box-shadow:0 2px 8px rgba(15,23,42,.035); }
+        .material-row .row-number { width:28px; height:28px; border-radius:9px; background:#eff6ff; color:#2563eb; display:grid; place-items:center; font-weight:800; font-size:.78rem; }
+        .material-row .form-control,.material-row .form-select { min-height:42px; }
+        .formula-metric { border:1px solid #e2e8f0; border-radius:12px; padding:12px; background:#f8fafc; }
+        .formula-metric .label { font-size:.72rem; color:#64748b; }
+        .formula-metric .value { font-weight:900; font-size:1.05rem; color:#172033; }
+        .formula-valid { border-color:#86efac !important; background:linear-gradient(135deg,#ecfdf5,#fff) !important; }
+        .formula-invalid { border-color:#fecaca !important; background:linear-gradient(135deg,#fff7ed,#fff) !important; }
+        .formula-table-chip { display:inline-flex; align-items:center; gap:4px; margin:2px 4px 2px 0; padding:5px 8px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; font-size:.78rem; }
+        .tips-card { position:relative; height:100%; }
+        .tips-card .card-body { padding-top:1rem; }
+        .tips-actions { display:flex; gap:5px; }
+        .tips-actions .btn { width:34px; height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; }
+        .tips-title-row { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+        .tips-item { margin-bottom:.65rem; }
+        .tips-item:last-child { margin-bottom:0; }
+        .tips-item-label { font-weight:800; color:#273449; }
+        .tips-empty { border:1px dashed #cbd5e1; border-radius:14px; padding:28px; text-align:center; color:var(--muted); background:#f8fafc; }
+        @media (max-width: 767px) {
+            .navbar .container-fluid { align-items:flex-start; gap:8px; flex-wrap:wrap; }
+            .navbar-nav { width:100%; }
+            .nav-grid { width:100%; margin-left:0; }
+            .nav-link { font-size:.82rem; }
+            .card-body { padding:1rem; }
+            .table-responsive { border-radius:10px; }
+            .modal-dialog { margin:.65rem; }
+            .modal-body { padding:1rem; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Navigasi Tab -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-bottle-droplet me-2"></i>Aromaku</span>
+            <div class="navbar-nav nav-grid">
+                <a class="nav-link active" onclick="switchTab('home')"><i class="fa-solid fa-box me-1"></i> Produk</a>
+                <a class="nav-link" onclick="switchTab('analisis')"><i class="fa-solid fa-chart-pie me-1"></i> Analisa</a>
+                <a class="nav-link" onclick="switchTab('supplier')"><i class="fa-solid fa-truck-field me-1"></i> Supplier</a>
+                <a class="nav-link" onclick="switchTab('formula')"><i class="fa-solid fa-flask me-1"></i> Formula Aroma</a>
+                <a class="nav-link" onclick="switchTab('ilmu')"><i class="fa-solid fa-graduation-cap me-1"></i> Tips</a>
+                <a class="nav-link" onclick="switchTab('settings')"><i class="fa-solid fa-gear me-1"></i> Backup</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid my-4">
+        
+        <!-- TAB 1: PRODUK & FORM -->
+        <div id="home" class="tab-content active">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title m-0">Daftar Produk, HPP & Analisis Biaya</h5>
+                                <button class="btn btn-primary" onclick="bukaModalTambahProduk()">
+                                    <i class="fa-solid fa-plus me-1"></i>Tambah Varian
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nama Aroma</th>
+                                            <th>Ml</th>
+                                            <th>Total Modal (HPP)</th>
+                                            <th>Harga Jual</th>
+                                            <th>Admin Marketplace</th>
+                                            <th>Net Profit (Bersih)</th>
+                                            <th>Stok</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: ANALISIS KEUANGAN -->
+        <div id="analisis" class="tab-content">
+            <div class="row mb-4">
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm border-0 bg-primary text-white p-3">
+                        <h6>Total Modal Seluruh Stok</h6>
+                        <h3 id="stat-modal">Rp 0</h3>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm border-0 bg-success text-white p-3">
+                        <h6>Potensi Keuntungan Bersih</h6>
+                        <h3 id="stat-untung">Rp 0</h3>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="card shadow-sm border-0 bg-warning text-dark p-3">
+                        <h6>Total Unit Barang (Stok)</h6>
+                        <h3 id="stat-stok">0 Pcs</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Analisis Modal per Produk</h5>
+                    <div id="bar-chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SUPPLIER -->
+        <div id="supplier" class="tab-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title m-0">Daftar Supplier Bahan Baku & Kemasan</h5>
+                                <button class="btn btn-primary" onclick="bukaModalTambahSupplier()">
+                                    <i class="fa-solid fa-plus me-1"></i>Tambah Supplier
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Nama Supplier</th>
+                                            <th>WhatsApp</th>
+                                            <th>Alamat</th>
+                                            <th>MOQ</th>
+                                            <th>BPOM</th>
+                                            <th>Halal</th>
+                                            <th>Catatan & Pelayanan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="supplier-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: FORMULA AROMA -->
+        <div id="formula" class="tab-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                <div>
+                                    <h5 class="card-title mb-1">
+                                        <i class="fa-solid fa-flask me-2 text-primary"></i>Formula Aroma
+                                    </h5>
+                                    <p class="text-muted small mb-0">
+                                        Buat formula secara fleksibel. Tambahkan aroma dan komposisi sesuai kebutuhan, lalu pastikan total tepat 100%.
+                                    </p>
+                                </div>
+                                <button class="btn btn-primary" onclick="bukaModalFormula()">
+                                    <i class="fa-solid fa-plus me-1"></i>Tambah Formula
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Formula</th>
+                                            <th>Tipe</th>
+                                            <th>Konsentrasi</th>
+                                            <th>Komposisi Bahan</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="formula-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: ILMU PARFUM (DIPERLUAS & DIPERBANYAK) -->
+        <div id="ilmu" class="tab-content">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-body">
+                            <h3 class="card-title text-primary mb-3"><i class="fa-solid fa-book-open me-2"></i>Pusat Ilmu & Tips Lengkap Parfum</h3>
+                            <p class="text-muted">Panduan mendalam mengenai struktur aroma, teknik pemakaian agar tahan seharian, cara penyimpanan yang benar, hingga strategi memilih parfum.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bagian Keluarga Aroma (Fragrance Families) -->
+                <div class="col-lg-12 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="m-0"><i class="fa-solid fa-feather me-2"></i>Keluarga Aroma (Fragrance Families) & Catatan Custom</h4>
+                        <button class="btn btn-outline-primary btn-sm" onclick="bukaModalCatatanAroma()">
+                            <i class="fa-solid fa-pen-to-square me-1"></i>Catat/Edit Aroma Khas Saya
+                        </button>
+                    </div>
+                    
+                    <!-- Box Catatan Custom Pemilik -->
+                    <div class="card shadow-sm border-0 mb-3 bg-white border-start border-primary border-4" id="custom-notes-box" style="display: none;">
+                        <div class="card-body">
+                            <h6 class="text-primary fw-bold"><i class="fa-solid fa-clipboard-user me-2"></i>Catatan Formula & Varian Khas Toko Anda:</h6>
+                            <p id="display-custom-notes" class="mb-0 text-dark" style="white-space: pre-line;"></p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Fruity -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #ff6b6b;">
+                                <div class="card-body">
+                                    <span class="badge bg-danger mb-2">Fruity (Buah-buahan)</span>
+                                    <h5 class="card-title text-dark fw-bold">Manis & Menyegarkan</h5>
+                                    <p class="card-text text-muted small">Karakter aroma yang manis, ceria, berair, dan berkesan muda atau kasual.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Buah:</strong> Persik (Peach), Stroberi, Apel, Mangga, Nanas, dan Pear.</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Penggunaan santai siang hari, remaja, dan parfum berkarakter ceria.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Floral -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #e83e8c;">
+                                <div class="card-body">
+                                    <span class="badge mb-2" style="background-color: #e83e8c; color: white;">Floral (Bunga)</span>
+                                    <h5 class="card-title text-dark fw-bold">Elegan & Romantis</h5>
+                                    <p class="card-text text-muted small">Keluarga aroma yang paling luas, mencakup nuansa kelopak bunga segar hingga bedak.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bunga:</strong> Mawar (Rose), Melati (Jasmine), Peony, Lily of the Valley, dan Lavender.</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Parfum wanita, acara formal, pernikahan, atau kesan feminin yang kuat.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Woody -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #795548;">
+                                <div class="card-body">
+                                    <span class="badge bg-secondary mb-2" style="background-color: #795548;">Woody (Kayu-kayuan)</span>
+                                    <h5 class="card-title text-dark fw-bold">Hangat, Maskulin & Membumi</h5>
+                                    <p class="card-text text-muted small">Aroma yang berkarakter kayu kering, hangat, misterius, dan memberikan kesan elegan.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Kayu:</strong> Sandalwood (Cendana), Cedarwood, Vetiver, dan Oud (Gaharu).</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Parfum pria, base note penyeimbang, dan acara malam hari.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Citrus -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #fd7e14;">
+                                <div class="card-body">
+                                    <span class="badge bg-warning text-dark mb-2">Citrus (Jeruk & Buah Segar)</span>
+                                    <h5 class="card-title text-dark fw-bold">Segar, Energik & Bersih</h5>
+                                    <p class="card-text text-muted small">Aroma perasan buah jeruk yang meledak-ledak di awal, sangat menyegarkan pikiran.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Bergamot, Lemon, Jeruk Nipis (Lime), Mandarin, dan Grapefruit.</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Parfum olahraga, cuaca panas, dan semprotan pertama penyegar.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Gourmand & Oriental -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #6f42c1;">
+                                <div class="card-body">
+                                    <span class="badge mb-2" style="background-color: #6f42c1; color: white;">Gourmand & Oriental</span>
+                                    <h5 class="card-title text-dark fw-bold">Manis Makanan & Rempah Mewah</h5>
+                                    <p class="card-text text-muted small">Aroma mirip makanan manis (seperti kue/karamel) berpadu rempah hangat yang sensual.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Vanilla, Karamel, Cokelat, Kayu Manis (Cinnamon), dan Amber.</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Parfum malam hari, cuaca dingin, dan kesan mewah yang tahan lama.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Aquatic / Fresh Water -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 family-card" style="border-top-color: #0dcaf0;">
+                                <div class="card-body">
+                                    <span class="badge bg-info text-dark mb-2">Aquatic / Marine</span>
+                                    <h5 class="card-title text-dark fw-bold">Segar Laut & Udara Bersih</h5>
+                                    <p class="card-text text-muted small">Memberikan sensasi angin laut, air asin, atau udara pegunungan yang sangat bersih.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Sea notes, Calone, ozonic notes, dan green tea.</p>
+                                    <p class="small mt-2 text-muted"><strong>Cocok untuk:</strong> Pengguna aktif, kantoran, dan orang yang tidak suka aroma terlalu manis.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Piramida Aroma -->
+                <div class="col-lg-12 mb-4">
+                    <h4 class="mb-3"><i class="fa-solid fa-mountain me-2"></i>Piramida Aroma (Fragrance Pyramid)</h4>
+                    <div class="row g-3">
+                        <!-- Top Note -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 note-card">
+                                <div class="card-body">
+                                    <span class="badge bg-danger mb-2">Fase 1 (0 - 15 Menit Pertama)</span>
+                                    <h5 class="card-title text-dark fw-bold">Top Note (Catatan Puncak)</h5>
+                                    <p class="card-text text-muted small">Aroma pertama yang tercium saat parfum disemprotkan. Biasanya berkarakter ringan, segar, dan cepat menguap.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Citrus (Lemon, Jeruk Nipis, Bergamot), Buah-buahan segar (Apel, Berry), Mint, dan Lavender ringan.</p>
+                                    <p class="small mt-2 text-primary"><strong>Fungsi Penjualan:</strong> Menarik minat pembeli pertama kali (first impression) saat tes semprot di toko.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Middle Note -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 note-card" style="border-left-color: #ffc107;">
+                                <div class="card-body">
+                                    <span class="badge bg-warning text-dark mb-2">Fase 2 (15 Menit - 2 Jam)</span>
+                                    <h5 class="card-title text-dark fw-bold">Middle / Heart Note (Catatan Hati)</h5>
+                                    <p class="card-text text-muted small">Aroma yang mulai muncul setelah top note mulai memudar. Menjadi karakter utama atau "jiwa" dari sebuah parfum.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Floral (Mawar, Melati, Lavender, Lily), Rempah (Kayu Manis, Pala), dan Buah matang.</p>
+                                    <p class="small mt-2 text-primary"><strong>Fungsi Penjualan:</strong> Menentukan kepribadian parfum (apakah romantis, elegan, manis, atau maskulin) yang membuat pelanggan jatuh cinta.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Base Note -->
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100 note-card" style="border-left-color: #198754;">
+                                <div class="card-body">
+                                    <span class="badge bg-success mb-2">Fase 3 (2 Jam - Seterusnya)</span>
+                                    <h5 class="card-title text-dark fw-bold">Base Note (Catatan Dasar)</h5>
+                                    <p class="card-text text-muted small">Aroma terdalam yang bertahan paling lama di kulit atau pakaian. Berkarakter berat, dalam, dan tahan lama.</p>
+                                    <hr>
+                                    <p class="small mb-0"><strong>Contoh Bahan:</strong> Kayu-kayuan (Sandalwood, Cedarwood), Musk, Amber, Vanilla, dan Patchouli (Nilam).</p>
+                                    <p class="small mt-2 text-primary"><strong>Fungsi Penjualan:</strong> Memberikan kesan awet (long-lasting) yang sering dicari konsumen di Indonesia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Jenis Konsentrasi Parfum -->
+                <div class="col-lg-12 mb-4">
+                    <h4 class="mb-3"><i class="fa-solid fa-vials me-2"></i>Klasifikasi Konsentrasi Minyak Wangi</h4>
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Jenis / Kategori</th>
+                                            <th>Konsentrasi Minyak</th>
+                                            <th>Daya Tahan Rata-rata</th>
+                                            <th>Karakter & Penggunaan</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-bold">Extrait / Parfum Pur</td>
+                                            <td>20% - 30%++</td>
+                                            <td>6 - 8 Jam (atau lebih)</td>
+                                            <td>Sangat pekat, mewah, cocok untuk acara formal atau malam hari. Harga bahan baku paling tinggi.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Eau de Parfum (EDP)</td>
+                                            <td>15% - 20%</td>
+                                            <td>4 - 6 Jam</td>
+                                            <td>Pilihan paling populer di pasaran karena ketahanan baik dan harga masih rasional untuk konsumen umum.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Eau de Toilette (EDT)</td>
+                                            <td>5% - 15%</td>
+                                            <td>3 - 4 Jam</td>
+                                            <td>Ringan, segar, sangat cocok untuk penggunaan sehari-hari atau cuaca panas di Indonesia.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Eau de Cologne (EDC)</td>
+                                            <td>2% - 4%</td>
+                                            <td>1 - 2 Jam</td>
+                                            <td>Aroma sangat ringan, menyegarkan, biasanya disemprotkan berulang kali setelah mandi.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ================= TIPS & KNOWLEDGE ================= -->
+                <div class="col-lg-12 mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <h4 class="m-0"><i class="fa-solid fa-lightbulb me-2 text-primary"></i>Tips & Pengetahuan Parfum</h4>
+                            <p class="text-muted small mb-0 mt-1">Kelola materi tips Anda sendiri. Setiap kartu bisa diedit, diduplikasi, atau dihapus.</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="bukaModalTips()">
+                            <i class="fa-solid fa-plus me-1"></i>Tambah Tips
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tips-container" class="row g-3"></div>
+            </div>
+        </div>
+
+        <!-- TAB 6: SETTINGS -->
+        <div id="settings" class="tab-content">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Backup & Restore Data</h5>
+                            <p class="text-muted small">Amankan data aplikasi Anda dengan backup ke file .json atau pulihkan dari file cadangan.</p>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary" onclick="backupData()">
+                                    <i class="fa-solid fa-download me-1"></i> Backup All Data (.json)
+                                </button>
+                                <label class="btn btn-outline-success m-0">
+                                    <i class="fa-solid fa-upload me-1"></i> Restore Data
+                                    <input type="file" id="restore-file" hidden accept=".json" onchange="restoreData(event)">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Catatan Aroma Custom -->
+    <div class="modal fade" id="modalCatatanAroma" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Catatan Formula & Aroma Khas Saya</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tuliskan ide racikan, campuran bibit, atau catatan aroma eksklusif Anda di sini:</label>
+                        <textarea id="input-custom-notes" class="form-control" rows="6" placeholder="Contoh: Racikan Signature Varian A = 60% Woody (Sandalwood) + 40% Sweet Vanilla, ditambah sedikit Musk sebagai fixative agar awet seharian di baju..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-success" onclick="simpanCatatanAroma()">Simpan Catatan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Formula Profesional -->
+    <div class="modal fade" id="modalFormula" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <div>
+                        <h5 class="modal-title" id="modalFormulaTitle"><i class="fa-solid fa-flask me-2"></i>Formula Lab Profesional</h5>
+                        <div class="small opacity-75">Penyusunan formula konsentrat, bahan aromatik, dan pengenceran batch</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" id="formula-index">
+
+                    <div class="formula-pro-header mb-3">
+                        <div class="formula-pro-icon"><i class="fa-solid fa-flask-vial"></i></div>
+                        <div>
+                            <div class="fw-bold">Formula sebagai formula kerja</div>
+                            <div class="small text-muted">Gunakan persentase bahan dalam konsentrat. Total bahan aromatik harus tepat 100%.</div>
+                        </div>
+                    </div>
+
+                    <div class="formula-section-title">01 · Identitas Formula</div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold">Nama Formula</label>
+                            <input type="text" id="formula-nama" class="form-control" placeholder="Contoh: Signature Woody Amber">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Kode</label>
+                            <input type="text" id="formula-kode" class="form-control" placeholder="FR-001">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Versi</label>
+                            <input type="text" id="formula-versi" class="form-control" placeholder="V1.0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Jenis Produk</label>
+                            <select id="formula-tipe" class="form-select">
+                                <option value="Concentrate">Concentrate / Bibit</option>
+                                <option value="Extrait">Extrait / Parfum</option>
+                                <option value="EDP" selected>EDP</option>
+                                <option value="EDT">EDT</option>
+                                <option value="Body Mist">Body Mist</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="formula-section-title">02 · Target Pengenceran & Batch</div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Konsentrasi Fragrance</label>
+                            <div class="input-group">
+                                <input type="number" id="formula-konsentrasi" class="form-control" min="0" max="100" step="0.1" value="20" oninput="hitungFormulaProfesional()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <div class="small text-muted mt-1">Contoh EDP: sesuaikan dengan standar formula Anda.</div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Target Batch</label>
+                            <input type="number" id="formula-batch" class="form-control" min="1" step="0.1" value="1000" oninput="hitungFormulaProfesional()">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Satuan</label>
+                            <select id="formula-satuan" class="form-select" onchange="hitungFormulaProfesional()">
+                                <option value="g" selected>gram (g)</option>
+                                <option value="ml">ml</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Fixative</label>
+                            <div class="input-group">
+                                <input type="number" id="formula-fixative" class="form-control" min="0" max="100" step="0.1" value="0" oninput="hitungFormulaProfesional()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Carrier / Pelarut</label>
+                            <div class="formula-metric h-100">
+                                <div class="label">Otomatis</div>
+                                <div class="value" id="formula-carrier">80%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formula-section-title">03 · Formula Concentrate</div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="small text-muted">Material dapat berupa fragrance oil, isolate, essential oil, accord, modifier, atau fixative.</div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="tambahAromaFormula()"><i class="fa-solid fa-plus me-1"></i>Tambah Bahan</button>
+                    </div>
+                    <div id="formula-aroma-list" class="d-grid gap-2"></div>
+
+                    <div id="formula-total-box" class="formula-summary mt-3">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-4">
+                                <div class="small text-muted">Total Formula Concentrate</div>
+                                <strong id="formula-total" class="formula-total-number">0%</strong>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="formula-total-bar"><div id="formula-total-fill" class="formula-total-fill"></div></div>
+                                <div id="formula-status" class="small mt-2 text-muted">Belum ada bahan.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="small text-muted">Kebutuhan concentrate untuk batch</div>
+                                <strong id="formula-concentrate-batch" class="formula-total-number">0 g</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="formula-section-title mt-4">04 · Parameter Produksi</div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-3"><div class="formula-metric"><div class="label">Total Fragrance</div><div class="value" id="formula-metric-fragrance">0 g</div></div></div>
+                        <div class="col-md-3"><div class="formula-metric"><div class="label">Fixative</div><div class="value" id="formula-metric-fixative">0 g</div></div></div>
+                        <div class="col-md-3"><div class="formula-metric"><div class="label">Carrier / Pelarut</div><div class="value" id="formula-metric-carrier">0 g</div></div></div>
+                        <div class="col-md-3"><div class="formula-metric"><div class="label">Batch Final</div><div class="value" id="formula-metric-batch">0 g</div></div></div>
+                    </div>
+
+                    <div class="mb-1">
+                        <label class="form-label fw-bold">Catatan Peracik / Brief Aroma</label>
+                        <textarea id="formula-keterangan" class="form-control" rows="3" placeholder="Contoh: Opening citrus bersih, heart floral transparan, dry-down woody amber. Catat hasil blotter, maceration, revisi, atau alasan perubahan formula."></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-success" onclick="simpanFormula()"><i class="fa-solid fa-check me-1"></i>Simpan Formula</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Produk -->
+    <div class="modal fade" id="modalTambah" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalProductTitle">Tambah Parfum Baru & Kalkulator Harga</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="product-index">
+                    <div class="row g-2">
+                        <div class="col-md-6"><label class="form-label">Nama Aroma</label><input type="text" id="input-aroma" class="form-control" placeholder="Contoh: Mulia"></div>
+                        <div class="col-md-3"><label class="form-label">Jumlah Ml</label><input type="number" id="input-ml" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-3"><label class="form-label">Harga/Ml (Rp)</label><input type="number" id="input-harga-per-ml" class="form-control" oninput="hitungOtomatis()"></div>
+                        
+                        <div class="col-12"><hr><h6>Rincian Biaya Modal (Rp):</h6></div>
+                        
+                        <div class="col-md-4"><label class="form-label">Botol</label><input type="number" id="input-botol" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Box</label><input type="number" id="input-box" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Iklan</label><input type="number" id="input-iklan" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Kirim (Ongkir)</label><input type="number" id="input-kirim" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Plastik/Packing</label><input type="number" id="input-plastik" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Karyawan</label><input type="number" id="input-karyawan" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Listrik</label><input type="number" id="input-listrik" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-4"><label class="form-label">Sewa Tempat</label><input type="number" id="input-sewa" class="form-control" oninput="hitungOtomatis()"></div>
+                        
+                        <div class="col-md-4"><label class="form-label">Admin Marketplace (%)</label><input type="number" id="input-admin" class="form-control" oninput="hitungOtomatis()"></div>
+                        <div class="col-md-8"><label class="form-label">Stok Awal</label><input type="number" id="input-stok" class="form-control" value="0"></div>
+
+                        <div class="col-12 mt-3">
+                            <div class="p-3 bg-light border rounded">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <span class="text-muted d-block">Total Modal (HPP):</span>
+                                        <h4 id="preview-modal" class="text-danger fw-bold">Rp 0</h4>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold text-primary">Target Untung (%)</label>
+                                        <div class="input-group">
+                                            <input type="number" id="input-persen-untung" class="form-control" value="50" oninput="hitungOtomatis()">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="text-muted d-block">Rekomendasi Harga Jual:</span>
+                                        <h3 id="preview-jual" class="text-success fw-bold">Rp 0</h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-success" onclick="simpanProduk()">Simpan Produk</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah/Edit Supplier -->
+    <div class="modal fade" id="modalTambahSupplier" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalSupplierTitle">Tambah Supplier Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="sup-index">
+                    <div class="row g-2">
+                        <div class="col-12"><label class="form-label">Nama Supplier</label><input type="text" id="sup-nama" class="form-control" placeholder="Contoh: PT Bibit Wangi Jaya"></div>
+                        <div class="col-12"><label class="form-label">Nomor WhatsApp</label><input type="text" id="sup-wa" class="form-control" placeholder="Contoh: 08123456789 atau 62812..."></div>
+                        <div class="col-12"><label class="form-label">Alamat Lengkap</label><textarea id="sup-alamat" class="form-control" rows="2" placeholder="Jl. Contoh No. 123, Kota..."></textarea></div>
+                        <div class="col-12"><label class="form-label">Jumlah MOQ (Minimum Order Quantity)</label><input type="text" id="sup-moq" class="form-control" placeholder="Contoh: 1 Kg / 100 Pcs"></div>
+                        
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label">Pengurusan BPOM</label>
+                            <select id="sup-bpom" class="form-select">
+                                <option value="Ya">Ya</option>
+                                <option value="Tidak">Tidak</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <label class="form-label">Pengurusan Halal</label>
+                            <select id="sup-halal" class="form-select">
+                                <option value="Ya">Ya</option>
+                                <option value="Tidak">Tidak</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mt-3"><label class="form-label">Catatan</label><textarea id="sup-catatan" class="form-control" rows="2" placeholder="Catatan tambahan untuk supplier ini..."></textarea></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-success" onclick="simpanSupplier()">Simpan Supplier</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Catatan Pelayanan Visit -->
+    <div class="modal fade" id="modalVisit" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Catatan Pelayanan Visit Tempat</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="visit-index">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold" id="visit-supplier-name"></label>
+                        <textarea id="visit-pelayanan" class="form-control" rows="4" placeholder="Tuliskan ulasan/catatan pelayanan di tempat supplier ini..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-primary" onclick="simpanVisit()">Simpan Catatan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Modal Tambah/Edit Tips -->
+    <div class="modal fade" id="modalTips" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalTipsTitle">Tambah Tips</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="tips-index">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Judul Tips</label>
+                            <input type="text" id="tips-judul" class="form-control" placeholder="Contoh: Teknik Penyimpanan Parfum">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Ikon Font Awesome</label>
+                            <input type="text" id="tips-icon" class="form-control" placeholder="fa-solid fa-lightbulb">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Isi Tips</label>
+                            <div class="small text-muted mb-2">Satu baris = satu poin tips. Gunakan format <strong>Label:</strong> isi jika ingin label tebal.</div>
+                            <textarea id="tips-isi" class="form-control" rows="9" placeholder="Contoh:
+Hindari sinar matahari: Simpan parfum di tempat gelap dan sejuk.
+Suhu: Hindari panas dan kelembapan tinggi."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button class="btn btn-success" onclick="simpanTips()"><i class="fa-solid fa-check me-1"></i>Simpan Tips</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      
+        let products = JSON.parse(localStorage.getItem('aromaku_products')) || [];
+        let suppliers = JSON.parse(localStorage.getItem('aromaku_suppliers')) || [];
+        let formulas = JSON.parse(localStorage.getItem('aromaku_formulas')) || [];
+        let customNotes = localStorage.getItem('aromaku_custom_notes') || '';
+        const DEFAULT_TIPS = [
+            {
+                judul:'Teknik Penyemprotan Agar Tahan Lama', icon:'fa-solid fa-bullseye',
+                items:[
+                    'Semprot di Titik Nadi: Area seperti pergelangan tangan, leher, belakang telinga, dan siku bagian dalam membantu penyebaran aroma.',
+                    'Lembapkan Kulit Terlebih Dahulu: Kulit yang kering membuat parfum lebih cepat menguap. Gunakan losion tanpa aroma sebelum menyemprotkan parfum.',
+                    'Jangan Menggosok Pergelangan Tangan: Biarkan parfum mengering alami agar karakter awal aroma tidak cepat berubah.',
+                    'Semprot ke Pakaian: Serat kain dapat mempertahankan aroma lebih lama. Uji terlebih dahulu pada kain yang sensitif.'
+                ]
+            },
+            {
+                judul:'Cara Penyimpanan & Perawatan Botol', icon:'fa-solid fa-shield-halved',
+                items:[
+                    'Hindari Sinar Matahari Langsung: Paparan UV dapat mempercepat perubahan warna dan karakter parfum.',
+                    'Jauhkan dari Suhu Panas & Lembap: Hindari menyimpan parfum di tempat dengan perubahan suhu ekstrem.',
+                    'Simpan di Tempat Gelap & Sejuk: Lemari atau laci dengan suhu relatif stabil lebih ideal.',
+                    'Maceration: Untuk racikan tertentu, catat tanggal pencampuran dan lakukan evaluasi aroma setelah masa pematangan yang Anda tetapkan.'
+                ]
+            },
+            {
+                judul:'Memilih Aroma Berdasarkan Cuaca & Aktivitas', icon:'fa-solid fa-cloud-sun',
+                items:[
+                    'Cuaca Panas / Outdoor: Pertimbangkan Citrus, Aquatic/Marine, atau Green yang terasa lebih ringan dan segar.',
+                    'Cuaca Dingin / Malam Hari: Gourmand, Oriental, atau Woody dapat memberikan kesan lebih hangat dan kaya.',
+                    'Kantor / Indoor: Pilih karakter yang bersih dan tidak terlalu agresif agar nyaman untuk lingkungan tertutup.'
+                ]
+            },
+            {
+                judul:'Mitos & Fakta Seputar Parfum', icon:'fa-solid fa-circle-info',
+                items:[
+                    'Mitos: Parfum mahal pasti tahan seharian di semua orang. Fakta: Performa dipengaruhi formulasi, kulit, cuaca, dan cara pemakaian.',
+                    'Mitos: Makin banyak disemprot makin awet. Fakta: Overspray dapat membuat aroma terasa terlalu kuat dan menyebabkan olfactory fatigue.',
+                    'Mitos: Parfum yang sudah lama pasti berbahaya. Fakta: Perubahan aroma lebih sering berkaitan dengan proses oksidasi dan penyimpanan.'
+                ]
+            },
+            {
+                judul:'Tips Strategi Jualan Parfum Lokal', icon:'fa-solid fa-lightbulb',
+                items:[
+                    'Edukasi Konsumen: Jelaskan dry down sehingga pelanggan tidak hanya menilai dari semprotan pertama.',
+                    'Fokus ke Base Note: Gunakan material yang sesuai tujuan formula dan catat hasil evaluasinya, bukan sekadar mengejar aroma yang paling kuat.',
+                    'Buat Varian Signature: Kembangkan karakter khas brand yang memiliki identitas sendiri.',
+                    'Transparansi Kualitas: Gunakan data HPP dan formula agar keputusan harga tetap sehat dan terukur.'
+                ]
+            }
+        ];
+        let tipsData = JSON.parse(localStorage.getItem('aromaku_tips') || 'null') || DEFAULT_TIPS.map(x => ({...x, items:[...x.items]}));
+        let finalHargaJualOtomatis = 0;
+        let finalTotalModal = 0;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+            renderSupplierTable();
+            renderFormulaTable();
+            renderCustomNotes();
+            renderTips();
+            hitungOtomatis();
+        });
+
+        function formatRupiah(angka) { 
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka); 
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'analisis') updateAnalisis();
+            if(tabId === 'supplier') renderSupplierTable();
+            if(tabId === 'formula') renderFormulaTable();
+            if(tabId === 'ilmu') { renderCustomNotes(); renderTips(); }
+        }
+
+        function renderCustomNotes() {
+            let box = document.getElementById('custom-notes-box');
+            let display = document.getElementById('display-custom-notes');
+            if (customNotes && customNotes.trim() !== '') {
+                display.innerText = customNotes;
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function bukaModalCatatanAroma() {
+            document.getElementById('input-custom-notes').value = customNotes;
+            let modal = new bootstrap.Modal(document.getElementById('modalCatatanAroma'));
+            modal.show();
+        }
+
+        function simpanCatatanAroma() {
+            customNotes = document.getElementById('input-custom-notes').value;
+            localStorage.setItem('aromaku_custom_notes', customNotes);
+            renderCustomNotes();
+            bootstrap.Modal.getInstance(document.getElementById('modalCatatanAroma')).hide();
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? '').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+
+        function simpanTipsStorage() {
+            localStorage.setItem('aromaku_tips', JSON.stringify(tipsData));
+        }
+
+        function renderTips() {
+            const container = document.getElementById('tips-container');
+            if (!container) return;
+            if (!tipsData.length) {
+                container.innerHTML = `<div class="col-12"><div class="tips-empty"><i class="fa-solid fa-lightbulb fa-2x mb-2"></i><div class="fw-bold">Belum ada tips</div><div class="small">Tambahkan tips pertama Anda.</div></div></div>`;
+                return;
+            }
+            container.innerHTML = tipsData.map((tip, index) => {
+                const items = (tip.items || []).map(item => {
+                    const text = String(item || '');
+                    const colon = text.indexOf(':');
+                    if (colon > 0 && colon < 55) {
+                        return `<li class="tips-item"><span class="tips-item-label">${escapeHTML(text.slice(0, colon + 1))}</span>${escapeHTML(text.slice(colon + 1))}</li>`;
+                    }
+                    return `<li class="tips-item">${escapeHTML(text)}</li>`;
+                }).join('');
+                return `
+                    <div class="col-lg-6 mb-1">
+                        <div class="card shadow-sm border-0 tips-card">
+                            <div class="card-body">
+                                <div class="tips-title-row mb-3">
+                                    <h5 class="text-primary mb-0"><i class="${escapeHTML(tip.icon || 'fa-solid fa-lightbulb')} me-2"></i>${escapeHTML(tip.judul)}</h5>
+                                    <div class="tips-actions flex-shrink-0">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="editTips(${index})" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="btn btn-outline-secondary btn-sm" onclick="duplicateTips(${index})" title="Duplicate"><i class="fa-solid fa-copy"></i></button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="hapusTips(${index})" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <ul class="mb-0 ps-3">${items}</ul>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function bukaModalTips(index = '') {
+            document.getElementById('tips-index').value = index;
+            if (index === '') {
+                document.getElementById('modalTipsTitle').innerText = 'Tambah Tips';
+                document.getElementById('tips-judul').value = '';
+                document.getElementById('tips-icon').value = 'fa-solid fa-lightbulb';
+                document.getElementById('tips-isi').value = '';
+            } else {
+                const tip = tipsData[index];
+                document.getElementById('modalTipsTitle').innerText = 'Edit Tips';
+                document.getElementById('tips-judul').value = tip.judul || '';
+                document.getElementById('tips-icon').value = tip.icon || 'fa-solid fa-lightbulb';
+                document.getElementById('tips-isi').value = (tip.items || []).join('\n');
+            }
+            new bootstrap.Modal(document.getElementById('modalTips')).show();
+        }
+
+        function editTips(index) { bukaModalTips(index); }
+
+        function simpanTips() {
+            const judul = document.getElementById('tips-judul').value.trim();
+            const icon = document.getElementById('tips-icon').value.trim() || 'fa-solid fa-lightbulb';
+            const items = document.getElementById('tips-isi').value.split('\n').map(x => x.trim()).filter(Boolean);
+            const index = document.getElementById('tips-index').value;
+            if (!judul) { alert('Mohon isi judul tips.'); return; }
+            if (!items.length) { alert('Mohon isi minimal satu poin tips.'); return; }
+            const data = { judul, icon, items };
+            if (index === '') tipsData.push(data); else tipsData[Number(index)] = data;
+            simpanTipsStorage();
+            renderTips();
+            bootstrap.Modal.getInstance(document.getElementById('modalTips')).hide();
+        }
+
+        function duplicateTips(index) {
+            const original = tipsData[index];
+            const copy = JSON.parse(JSON.stringify(original));
+            copy.judul = `${original.judul} (Copy)`;
+            tipsData.splice(index + 1, 0, copy);
+            simpanTipsStorage();
+            renderTips();
+        }
+
+        function hapusTips(index) {
+            if (!confirm(`Hapus tips "${tipsData[index].judul}"?`)) return;
+            tipsData.splice(index, 1);
+            simpanTipsStorage();
+            renderTips();
+        }
+
+        function hitungOtomatis() {
+            let ml = parseFloat(document.getElementById("input-ml").value) || 0;
+            let hargaPerMl = parseFloat(document.getElementById("input-harga-per-ml").value) || 0;
+            let bibit = ml * hargaPerMl;
+
+            let biaya = [
+                parseFloat(document.getElementById("input-botol").value) || 0,
+                parseFloat(document.getElementById("input-box").value) || 0,
+                parseFloat(document.getElementById("input-iklan").value) || 0,
+                parseFloat(document.getElementById("input-kirim").value) || 0,
+                parseFloat(document.getElementById("input-plastik").value) || 0,
+                parseFloat(document.getElementById("input-karyawan").value) || 0,
+                parseFloat(document.getElementById("input-listrik").value) || 0,
+                parseFloat(document.getElementById("input-sewa").value) || 0
+            ];
+
+            finalTotalModal = bibit + biaya.reduce((a, b) => a + b, 0);
+            document.getElementById("preview-modal").innerText = formatRupiah(finalTotalModal);
+
+            let persenUntung = parseFloat(document.getElementById("input-persen-untung").value) || 50;
+            let adminPersen = parseFloat(document.getElementById("input-admin").value) || 0;
+            
+            let targetLabaRp = finalTotalModal * (persenUntung / 100);
+            let sisaAdminMultiplier = 1 - (adminPersen / 100);
+
+            if (sisaAdminMultiplier > 0) {
+                finalHargaJualOtomatis = (finalTotalModal + targetLabaRp) / sisaAdminMultiplier;
+            } else {
+                finalHargaJualOtomatis = finalTotalModal + targetLabaRp;
+            }
+
+            document.getElementById("preview-jual").innerText = formatRupiah(Math.round(finalHargaJualOtomatis));
+        }
+
+        function bukaModalTambahProduk() {
+            document.getElementById("modalProductTitle").innerText = "Tambah Parfum Baru & Kalkulator Harga";
+            document.getElementById("product-index").value = "";
+            document.getElementById("input-aroma").value = "";
+            document.getElementById("input-ml").value = "";
+            document.getElementById("input-harga-per-ml").value = "";
+            document.getElementById("input-botol").value = "";
+            document.getElementById("input-box").value = "";
+            document.getElementById("input-iklan").value = "";
+            document.getElementById("input-kirim").value = "";
+            document.getElementById("input-plastik").value = "";
+            document.getElementById("input-karyawan").value = "";
+            document.getElementById("input-listrik").value = "";
+            document.getElementById("input-sewa").value = "";
+            document.getElementById("input-admin").value = "";
+            document.getElementById("input-stok").value = "0";
+            document.getElementById("input-persen-untung").value = "50";
+            hitungOtomatis();
+
+            let modal = new bootstrap.Modal(document.getElementById('modalTambah'));
+            modal.show();
+        }
+
+        function editProduk(index) {
+            let p = products[index];
+            document.getElementById("modalProductTitle").innerText = "Edit Varian Parfum";
+            document.getElementById("product-index").value = index;
+            document.getElementById("input-aroma").value = p.aroma || "";
+            document.getElementById("input-ml").value = p.ml || "";
+            document.getElementById("input-harga-per-ml").value = p.hargaPerMl || "";
+            document.getElementById("input-botol").value = p.botol || "";
+            document.getElementById("input-box").value = p.box || "";
+            document.getElementById("input-iklan").value = p.iklan || "";
+            document.getElementById("input-kirim").value = p.kirim || "";
+            document.getElementById("input-plastik").value = p.plastik || "";
+            document.getElementById("input-karyawan").value = p.karyawan || "";
+            document.getElementById("input-listrik").value = p.listrik || "";
+            document.getElementById("input-sewa").value = p.sewa || "";
+            document.getElementById("input-admin").value = p.adminPersen || "";
+            document.getElementById("input-stok").value = p.stok || 0;
+            document.getElementById("input-persen-untung").value = p.persenUntung || 50;
+            
+            hitungOtomatis();
+
+            let modal = new bootstrap.Modal(document.getElementById('modalTambah'));
+            modal.show();
+        }
+
+        function simpanProduk() {
+            let index = document.getElementById("product-index").value;
+            let aroma = document.getElementById("input-aroma").value;
+            if (!aroma) {
+                alert("Mohon isi Nama Aroma terlebih dahulu!");
+                return;
+            }
+            
+            let ml = parseFloat(document.getElementById("input-ml").value) || 0;
+            let hargaPerMl = parseFloat(document.getElementById("input-harga-per-ml").value) || 0;
+            let botol = parseFloat(document.getElementById("input-botol").value) || 0;
+            let box = parseFloat(document.getElementById("input-box").value) || 0;
+            let iklan = parseFloat(document.getElementById("input-iklan").value) || 0;
+            let kirim = parseFloat(document.getElementById("input-kirim").value) || 0;
+            let plastik = parseFloat(document.getElementById("input-plastik").value) || 0;
+            let karyawan = parseFloat(document.getElementById("input-karyawan").value) || 0;
+            let listrik = parseFloat(document.getElementById("input-listrik").value) || 0;
+            let sewa = parseFloat(document.getElementById("input-sewa").value) || 0;
+            let adminPersen = parseFloat(document.getElementById("input-admin").value) || 0;
+            let stok = parseInt(document.getElementById("input-stok").value) || 0;
+            let persenUntung = parseFloat(document.getElementById("input-persen-untung").value) || 50;
+
+            let productData = { 
+                aroma, 
+                ml, 
+                hargaPerMl,
+                botol,
+                box,
+                iklan,
+                kirim,
+                plastik,
+                karyawan,
+                listrik,
+                sewa,
+                totalModal: finalTotalModal, 
+                jual: Math.round(finalHargaJualOtomatis), 
+                adminPersen, 
+                stok,
+                persenUntung
+            };
+
+            if (index === "") {
+                products.push(productData);
+            } else {
+                products[index] = productData;
+            }
+
+            localStorage.setItem('aromaku_products', JSON.stringify(products));
+            renderTable();
+            bootstrap.Modal.getInstance(document.getElementById('modalTambah')).hide();
+        }
+
+        function hapusProduk(index) {
+            if (confirm("Yakin ingin menghapus produk ini?")) {
+                products.splice(index, 1);
+                localStorage.setItem('aromaku_products', JSON.stringify(products));
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById("product-table-body");
+            tbody.innerHTML = "";
+            
+            if (products.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Belum ada data varian parfum.</td></tr>`;
+                return;
+            }
+
+            products.forEach((p, index) => {
+                let biayaAdminRp = (p.adminPersen / 100) * p.jual;
+                let netProfit = p.jual - p.totalModal - biayaAdminRp;
+                let profitClass = netProfit >= 0 ? "positive-profit" : "negative-profit";
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${p.aroma}</td>
+                        <td>${p.ml} ml</td>
+                        <td>${formatRupiah(p.totalModal)}</td>
+                        <td>${formatRupiah(p.jual)}</td>
+                        <td>${p.adminPersen}% (${formatRupiah(biayaAdminRp)})</td>
+                        <td class="profit-badge ${profitClass}">${formatRupiah(netProfit)}</td>
+                        <td>${p.stok} pcs</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary mb-1" onclick="editProduk(${index})" title="Edit Produk">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger mb-1" onclick="hapusProduk(${index})" title="Hapus Produk">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateAnalisis() {
+            let totalModalSeluruh = 0;
+            let totalUntungSeluruh = 0;
+            let totalStok = 0;
+            let chartContainer = document.getElementById('bar-chart-container');
+            chartContainer.innerHTML = "";
+
+            if (products.length === 0) {
+                chartContainer.innerHTML = `<p class="text-muted">Belum ada data produk untuk dianalisis.</p>`;
+                document.getElementById('stat-modal').innerText = formatRupiah(0);
+                document.getElementById('stat-untung').innerText = formatRupiah(0);
+                document.getElementById('stat-stok').innerText = "0 Pcs";
+                return;
+            }
+
+            let modalPerProduk = products.map(p => (p.totalModal * p.stok));
+            let maxModal = Math.max(...modalPerProduk, 1);
+
+            products.forEach((p, index) => {
+                let netProfitPerPcs = p.jual - p.totalModal - ((p.adminPersen / 100) * p.jual);
+                let modalItem = p.totalModal * p.stok;
+                let untungItem = netProfitPerPcs * p.stok;
+
+                totalModalSeluruh += modalItem;
+                totalUntungSeluruh += untungItem;
+                totalStok += parseInt(p.stok) || 0;
+
+                let persentaseBar = (modalItem / maxModal) * 100;
+
+                chartContainer.innerHTML += `
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold">${p.aroma} (${p.stok} Pcs)</span>
+                            <span class="text-muted">Modal Total: ${formatRupiah(modalItem)} | Potensi Bersih: ${formatRupiah(untungItem)}</span>
+                        </div>
+                        <div class="progress" style="height: 22px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: ${persentaseBar}%" aria-valuenow="${persentaseBar}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('stat-modal').innerText = formatRupiah(totalModalSeluruh);
+            document.getElementById('stat-untung').innerText = formatRupiah(totalUntungSeluruh);
+            document.getElementById('stat-stok').innerText = totalStok + " Pcs";
+        }
+
+        // --- FORMULA LAB PROFESIONAL ---
+        // Formula disimpan sebagai array bahan dinamis. Data lama A-D tetap dapat dibaca.
+        let formulaAromaDraft = [];
+
+        function formatPersen(nilai) {
+            return Number(nilai || 0).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + '%';
+        }
+
+        function normalisasiAromaFormula(f) {
+            if (Array.isArray(f.aromas)) {
+                return f.aromas.map(x => ({
+                    nama: String(x.nama ?? '').trim(),
+                    peran: String(x.peran ?? 'Heart').trim(),
+                    komposisi: Math.max(0, parseFloat(x.komposisi) || 0),
+                    sumber: String(x.sumber ?? '').trim(),
+                    catatan: String(x.catatan ?? '').trim()
+                }));
+            }
+            const old = [
+                ['Aroma A', parseFloat(f.a) || 0],
+                ['Aroma B', parseFloat(f.b) || 0],
+                ['Aroma C', parseFloat(f.c) || 0],
+                ['Aroma D', parseFloat(f.d) || 0]
+            ];
+            return old.filter(x => x[1] > 0).map(x => ({ nama:x[0], peran:'Heart', komposisi:x[1], sumber:'', catatan:'' }));
+        }
+
+        function totalAromaFormula(aromas = formulaAromaDraft) {
+            return aromas.reduce((sum, item) => sum + (parseFloat(item.komposisi) || 0), 0);
+        }
+
+        function tambahAromaFormula(nama = '', komposisi = 0, peran = 'Heart', sumber = '', catatan = '') {
+            formulaAromaDraft.push({ nama, komposisi, peran, sumber, catatan });
+            renderAromaDraft();
+        }
+
+        function hapusAromaDraft(index) {
+            formulaAromaDraft.splice(index, 1);
+            renderAromaDraft();
+        }
+
+        function ubahFieldAroma(index, field, value) {
+            if (!formulaAromaDraft[index]) return;
+            formulaAromaDraft[index][field] = field === 'komposisi' ? (parseFloat(value) || 0) : value;
+            hitungFormulaProfesional();
+        }
+
+        function renderAromaDraft() {
+            const container = document.getElementById('formula-aroma-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (formulaAromaDraft.length === 0) {
+                container.innerHTML = `
+                    <div class="formula-empty">
+                        <i class="fa-solid fa-flask-vial fa-2x mb-2 text-primary"></i>
+                        <div class="fw-bold">Belum ada bahan formula</div>
+                        <div class="small mb-3">Tambahkan material satu per satu dan tentukan perannya di dalam formula.</div>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="tambahAromaFormula()"><i class="fa-solid fa-plus me-1"></i>Tambah Bahan Pertama</button>
+                    </div>`;
+                hitungFormulaProfesional();
+                return;
+            }
+
+            formulaAromaDraft.forEach((item, index) => {
+                const gram = totalAromaFormula() > 0 ? ((parseFloat(item.komposisi)||0) / totalAromaFormula()) * (parseFloat(document.getElementById('formula-batch')?.value)||0) : 0;
+                container.innerHTML += `
+                    <div class="material-row">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-auto"><div class="row-number">${index + 1}</div></div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold">Material / Aroma</label>
+                                <input type="text" class="form-control" value="${escapeHtml(item.nama)}" placeholder="Vanilla, Musk, Bergamot..." oninput="ubahFieldAroma(${index},'nama',this.value)">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Peran</label>
+                                <select class="form-select" onchange="ubahFieldAroma(${index},'peran',this.value)">
+                                    ${['Top','Heart','Base','Modifier','Fixative'].map(x => `<option value="${x}" ${item.peran===x?'selected':''}>${x}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Komposisi</label>
+                                <div class="input-group"><input type="number" class="form-control" min="0" max="100" step="0.1" value="${item.komposisi}" oninput="ubahFieldAroma(${index},'komposisi',this.value)"><span class="input-group-text">%</span></div>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold">Sumber / Kode</label>
+                                <input type="text" class="form-control" value="${escapeHtml(item.sumber)}" placeholder="Supplier / kode" oninput="ubahFieldAroma(${index},'sumber',this.value)">
+                            </div>
+                            <div class="col-md-1"><div class="small text-muted">Batch</div><strong class="d-block mt-2" id="formula-gram-${index}">${gram.toLocaleString('id-ID',{maximumFractionDigits:2})} g</strong></div>
+                            <div class="col-auto"><button type="button" class="btn btn-outline-danger" onclick="hapusAromaDraft(${index})" title="Hapus material"><i class="fa-solid fa-trash"></i></button></div>
+                            <div class="col-12"><input type="text" class="form-control form-control-sm" value="${escapeHtml(item.catatan)}" placeholder="Catatan material / fungsi / hasil evaluasi" oninput="ubahFieldAroma(${index},'catatan',this.value)"></div>
+                        </div>
+                    </div>`;
+            });
+            hitungFormulaProfesional();
+        }
+
+        function hitungFormulaProfesional() {
+            const total = totalAromaFormula();
+            const totalEl = document.getElementById('formula-total');
+            const status = document.getElementById('formula-status');
+            const box = document.getElementById('formula-total-box');
+            const fill = document.getElementById('formula-total-fill');
+            if (!totalEl || !status || !box) return total;
+
+            const konsentrasi = Math.min(100, Math.max(0, parseFloat(document.getElementById('formula-konsentrasi')?.value) || 0));
+            const fixative = Math.min(100, Math.max(0, parseFloat(document.getElementById('formula-fixative')?.value) || 0));
+            const batch = Math.max(0, parseFloat(document.getElementById('formula-batch')?.value) || 0);
+            const carrier = Math.max(0, 100 - konsentrasi - fixative);
+            const fragranceBatch = batch * konsentrasi / 100;
+            const fixativeBatch = batch * fixative / 100;
+            const carrierBatch = batch * carrier / 100;
+
+            totalEl.innerText = formatPersen(total);
+            if (fill) {
+                fill.style.width = Math.min(total, 100) + '%';
+                fill.style.background = total > 100 ? '#dc3545' : (Math.abs(total - 100) < .000001 ? '#198754' : '#2563eb');
+            }
+            box.classList.remove('formula-valid','formula-invalid');
+            if (Math.abs(total - 100) < 0.000001 && total > 0) {
+                box.classList.add('formula-valid');
+                status.className = 'small mt-2 text-success fw-semibold';
+                status.innerHTML = '<i class="fa-solid fa-circle-check me-1"></i>Concentrate valid: total bahan tepat 100%.';
+            } else if (total < 100) {
+                status.className = 'small mt-2 text-warning-emphasis';
+                status.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-1"></i>Masih kurang ' + formatPersen(100-total) + '.';
+            } else {
+                box.classList.add('formula-invalid');
+                status.className = 'small mt-2 text-danger fw-semibold';
+                status.innerHTML = '<i class="fa-solid fa-circle-xmark me-1"></i>Kelebihan ' + formatPersen(total-100) + '. Kurangi komposisi.';
+            }
+
+            const unit = document.getElementById('formula-satuan')?.value || 'g';
+            const unitLabel = unit === 'ml' ? 'ml' : 'g';
+            const carrierEl = document.getElementById('formula-carrier');
+            const concEl = document.getElementById('formula-concentrate-batch');
+            if (carrierEl) carrierEl.innerText = formatPersen(carrier);
+            if (concEl) concEl.innerText = fragranceBatch.toLocaleString('id-ID',{maximumFractionDigits:2}) + ' ' + unitLabel;
+            const set = (id,val) => { const el=document.getElementById(id); if(el) el.innerText=val.toLocaleString('id-ID',{maximumFractionDigits:2})+' '+unitLabel; };
+            set('formula-metric-fragrance', fragranceBatch);
+            set('formula-metric-fixative', fixativeBatch);
+            set('formula-metric-carrier', carrierBatch);
+            set('formula-metric-batch', batch);
+
+            formulaAromaDraft.forEach((item,index)=>{
+                const el=document.getElementById('formula-gram-'+index);
+                if(el) el.innerText=((parseFloat(item.komposisi)||0)/100*fragranceBatch).toLocaleString('id-ID',{maximumFractionDigits:2})+' '+unitLabel;
+            });
+            return total;
+        }
+
+        function bukaModalFormula() {
+            document.getElementById('modalFormulaTitle').innerHTML = '<i class="fa-solid fa-flask me-2"></i>Formula Lab Profesional';
+            document.getElementById('formula-index').value = '';
+            document.getElementById('formula-nama').value = '';
+            document.getElementById('formula-kode').value = '';
+            document.getElementById('formula-versi').value = 'V1.0';
+            document.getElementById('formula-tipe').value = 'EDP';
+            document.getElementById('formula-konsentrasi').value = '20';
+            document.getElementById('formula-batch').value = '1000';
+            document.getElementById('formula-satuan').value = 'g';
+            document.getElementById('formula-fixative').value = '0';
+            document.getElementById('formula-keterangan').value = '';
+            formulaAromaDraft = [];
+            renderAromaDraft();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFormula')).show();
+        }
+
+        function editFormula(index) {
+            const f = formulas[index];
+            if (!f) return;
+            document.getElementById('modalFormulaTitle').innerHTML = '<i class="fa-solid fa-flask me-2"></i>Edit Formula Profesional';
+            document.getElementById('formula-index').value = index;
+            document.getElementById('formula-nama').value = f.nama || '';
+            document.getElementById('formula-kode').value = f.kode || '';
+            document.getElementById('formula-versi').value = f.versi || 'V1.0';
+            document.getElementById('formula-tipe').value = f.tipe || 'EDP';
+            document.getElementById('formula-konsentrasi').value = f.konsentrasi ?? 20;
+            document.getElementById('formula-batch').value = f.batchSize ?? 1000;
+            document.getElementById('formula-satuan').value = f.satuan || 'g';
+            document.getElementById('formula-fixative').value = f.fixative ?? 0;
+            document.getElementById('formula-keterangan').value = f.keterangan || '';
+            formulaAromaDraft = normalisasiAromaFormula(f);
+            renderAromaDraft();
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('modalFormula')).show();
+        }
+
+        function simpanFormula() {
+            const index = document.getElementById('formula-index').value;
+            const nama = document.getElementById('formula-nama').value.trim();
+            const kode = document.getElementById('formula-kode').value.trim();
+            const versi = document.getElementById('formula-versi').value.trim() || 'V1.0';
+            const tipe = document.getElementById('formula-tipe').value;
+            const konsentrasi = parseFloat(document.getElementById('formula-konsentrasi').value) || 0;
+            const batchSize = parseFloat(document.getElementById('formula-batch').value) || 0;
+            const satuan = document.getElementById('formula-satuan').value;
+            const fixative = parseFloat(document.getElementById('formula-fixative').value) || 0;
+            const keterangan = document.getElementById('formula-keterangan').value.trim();
+            const aromas = formulaAromaDraft.map(x => ({
+                nama: String(x.nama || '').trim(),
+                peran: String(x.peran || 'Heart'),
+                komposisi: parseFloat(x.komposisi) || 0,
+                sumber: String(x.sumber || '').trim(),
+                catatan: String(x.catatan || '').trim()
+            })).filter(x => x.nama || x.komposisi > 0);
+            const total = totalAromaFormula(aromas);
+
+            if (!nama) return alert('Mohon isi Nama Formula terlebih dahulu.');
+            if (aromas.length === 0) return alert('Tambahkan minimal satu bahan ke formula.');
+            if (aromas.some(x => !x.nama)) return alert('Mohon isi nama semua material/bahan.');
+            if (aromas.some(x => x.komposisi < 0)) return alert('Komposisi tidak boleh negatif.');
+            if (Math.abs(total - 100) > 0.000001) return alert('Formula concentrate harus tepat 100%. Saat ini: ' + formatPersen(total));
+            if (konsentrasi + fixative > 100) return alert('Konsentrasi fragrance + fixative tidak boleh lebih dari 100%.');
+            if (batchSize <= 0) return alert('Target batch harus lebih dari 0.');
+
+            const old = index === '' ? null : formulas[index];
+            const formulaData = {
+                id: (index === '' && window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (index === '' ? Date.now() : (old?.id || Date.now())),
+                nama, kode, versi, tipe, konsentrasi, batchSize, satuan, fixative,
+                aromas, total: 100, keterangan,
+                updatedAt: new Date().toISOString()
+            };
+            if (index === '') formulas.push(formulaData); else formulas[index] = formulaData;
+            localStorage.setItem('aromaku_formulas', JSON.stringify(formulas));
+            renderFormulaTable();
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalFormula'));
+            if (modal) modal.hide();
+        }
+
+        function hapusFormula(index) {
+            if (!formulas[index]) return;
+            if (confirm('Yakin ingin menghapus formula "' + formulas[index].nama + '"?')) {
+                formulas.splice(index, 1);
+                localStorage.setItem('aromaku_formulas', JSON.stringify(formulas));
+                renderFormulaTable();
+            }
+        }
+
+        function renderFormulaTable() {
+            const tbody = document.getElementById('formula-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (formulas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-5"><i class="fa-solid fa-flask-vial fa-2x mb-2 d-block text-primary"></i>Belum ada formula aroma. Silakan tambah formula pertama.</td></tr>';
+                return;
+            }
+            formulas.forEach((f,index)=>{
+                const aromas = normalisasiAromaFormula(f);
+                const total = totalAromaFormula(aromas);
+                const valid = Math.abs(total-100) < .000001;
+                const status = valid ? '<span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Valid</span>' : '<span class="badge bg-danger">Belum 100%</span>';
+                const chips = aromas.length ? aromas.map(a=>`<span class="formula-table-chip">${escapeHtml(a.nama)} <strong>${formatPersen(a.komposisi)}</strong></span>`).join('') : '<span class="text-muted">Belum ada bahan</span>';
+                tbody.innerHTML += `<tr>
+                    <td><div class="fw-bold">${escapeHtml(f.nama||'-')}</div><div class="small text-muted">${escapeHtml(f.kode||'Tanpa kode')} · ${escapeHtml(f.versi||'V1.0')}</div>${f.keterangan?`<div class="small text-muted mt-1">${escapeHtml(f.keterangan)}</div>`:''}</td>
+                    <td><span class="badge text-bg-light border">${escapeHtml(f.tipe||'EDP')}</span></td>
+                    <td class="fw-bold">${formatPersen(f.konsentrasi||0)}</td>
+                    <td style="min-width:320px;">${chips}</td>
+                    <td class="fw-bold">${formatPersen(total)}</td>
+                    <td>${status}</td>
+                    <td><div class="action-btns"><button class="btn btn-sm btn-outline-primary" onclick="editFormula(${index})" title="Edit Formula"><i class="fa-solid fa-pen-to-square"></i></button><button class="btn btn-sm btn-outline-danger" onclick="hapusFormula(${index})" title="Hapus Formula"><i class="fa-solid fa-trash"></i></button></div></td>
+                </tr>`;
+            });
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+        }
+
+        // --- FITUR SUPPLIER ---
+        function bukaModalTambahSupplier() {
+            document.getElementById("modalSupplierTitle").innerText = "Tambah Supplier Baru";
+            document.getElementById("sup-index").value = "";
+            document.getElementById("sup-nama").value = "";
+            document.getElementById("sup-wa").value = "";
+            document.getElementById("sup-alamat").value = "";
+            document.getElementById("sup-moq").value = "";
+            document.getElementById("sup-bpom").value = "Ya";
+            document.getElementById("sup-halal").value = "Ya";
+            document.getElementById("sup-catatan").value = "";
+            
+            let modal = new bootstrap.Modal(document.getElementById('modalTambahSupplier'));
+            modal.show();
+        }
+
+        function editSupplier(index) {
+            let s = suppliers[index];
+            document.getElementById("modalSupplierTitle").innerText = "Edit Supplier";
+            document.getElementById("sup-index").value = index;
+            document.getElementById("sup-nama").value = s.nama || "";
+            document.getElementById("sup-wa").value = s.wa || "";
+            document.getElementById("sup-alamat").value = s.alamat || "";
+            document.getElementById("sup-moq").value = s.moq || "";
+            document.getElementById("sup-bpom").value = s.bpom || "Ya";
+            document.getElementById("sup-halal").value = s.halal || "Ya";
+            document.getElementById("sup-catatan").value = s.catatan || "";
+            
+            let modal = new bootstrap.Modal(document.getElementById('modalTambahSupplier'));
+            modal.show();
+        }
+
+        function simpanSupplier() {
+            let index = document.getElementById("sup-index").value;
+            let nama = document.getElementById("sup-nama").value;
+            let wa = document.getElementById("sup-wa").value;
+            let alamat = document.getElementById("sup-alamat").value;
+            let moq = document.getElementById("sup-moq").value;
+            let bpom = document.getElementById("sup-bpom").value;
+            let halal = document.getElementById("sup-halal").value;
+            let catatan = document.getElementById("sup-catatan").value;
+
+            if (!nama) {
+                alert("Mohon isi Nama Supplier!");
+                return;
+            }
+
+            let supplierData = { 
+                nama, 
+                wa, 
+                alamat, 
+                moq, 
+                bpom, 
+                halal, 
+                catatan, 
+                visited: index !== "" ? (suppliers[index].visited || false) : false,
+                pelayanan: index !== "" ? (suppliers[index].pelayanan || "") : ""
+            };
+
+            if (index === "") {
+                suppliers.push(supplierData);
+            } else {
+                suppliers[index] = supplierData;
+            }
+
+            localStorage.setItem('aromaku_suppliers', JSON.stringify(suppliers));
+            renderSupplierTable();
+            
+            bootstrap.Modal.getInstance(document.getElementById('modalTambahSupplier')).hide();
+        }
+
+        function hapusSupplier(index) {
+            if (confirm("Yakin ingin menghapus supplier ini?")) {
+                suppliers.splice(index, 1);
+                localStorage.setItem('aromaku_suppliers', JSON.stringify(suppliers));
+                renderSupplierTable();
+            }
+        }
+
+        function toggleVisit(index) {
+            let s = suppliers[index];
+            if (!s.visited) {
+                s.visited = true;
+                localStorage.setItem('aromaku_suppliers', JSON.stringify(suppliers));
+                renderSupplierTable();
+                bukaModalVisit(index);
+            } else {
+                bukaModalVisit(index);
+            }
+        }
+
+        function bukaModalVisit(index) {
+            let s = suppliers[index];
+            document.getElementById("visit-index").value = index;
+            document.getElementById("visit-supplier-name").innerText = "Supplier: " + s.nama;
+            document.getElementById("visit-pelayanan").value = s.pelayanan || "";
+            
+            let modal = new bootstrap.Modal(document.getElementById('modalVisit'));
+            modal.show();
+        }
+
+        function simpanVisit() {
+            let index = document.getElementById("visit-index").value;
+            let pelayananText = document.getElementById("visit-pelayanan").value;
+            
+            suppliers[index].pelayanan = pelayananText;
+            localStorage.setItem('aromaku_suppliers', JSON.stringify(suppliers));
+            renderSupplierTable();
+
+            bootstrap.Modal.getInstance(document.getElementById('modalVisit')).hide();
+        }
+
+        function copyAlamat(alamat) {
+            navigator.clipboard.writeText(alamat).then(() => {
+                alert("Alamat berhasil disalin ke clipboard!");
+            }).catch(err => {
+                alert("Gagal menyalin alamat.");
+            });
+        }
+
+        function renderSupplierTable() {
+            const tbody = document.getElementById("supplier-table-body");
+            tbody.innerHTML = "";
+
+            if (suppliers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Belum ada data supplier.</td></tr>`;
+                return;
+            }
+
+            suppliers.forEach((s, index) => {
+                let cleanWa = s.wa ? s.wa.replace(/\D/g,'') : '';
+                if (cleanWa.startsWith('0')) {
+                    cleanWa = '62' + cleanWa.slice(1);
+                }
+
+                let badgeBpom = s.bpom === 'Ya' ? '<span class="badge bg-success">Ya</span>' : '<span class="badge bg-secondary">Tidak</span>';
+                let badgeHalal = s.halal === 'Ya' ? '<span class="badge bg-success">Ya</span>' : '<span class="badge bg-secondary">Tidak</span>';
+                
+                let visitBtnClass = s.visited ? "btn-primary" : "btn-outline-secondary";
+                let visitBtnText = s.visited ? '<i class="fa-solid fa-check me-1"></i>Visited' : '<i class="fa-solid fa-location-dot me-1"></i>Visit Tempat';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="fw-bold">${s.nama}</td>
+                        <td>
+                            ${s.wa ? `<a href="https://wa.me/${cleanWa}" target="_blank" class="btn btn-sm btn-success text-white mb-1"><i class="fa-brands fa-whatsapp me-1"></i>${s.wa}</a>` : '-'}
+                        </td>
+                        <td>
+                            <span>${s.alamat || '-'}</span>
+                            ${s.alamat ? `<button class="btn btn-sm btn-outline-secondary ms-2 py-0 px-1" title="Salin Alamat" onclick="copyAlamat(\`${s.alamat.replace(/`/g, '\\`')}\`)"><i class="fa-solid fa-copy"></i></button>` : ''}
+                        </td>
+                        <td>${s.moq || '-'}</td>
+                        <td>${badgeBpom}</td>
+                        <td>${badgeHalal}</td>
+                        <td>
+                            <div class="mb-1"><strong>Catatan:</strong> ${s.catatan || '-'}</div>
+                            <div><strong>Pelayanan:</strong> <span class="text-primary">${s.pelayanan || 'Belum diisi'}</span></div>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm ${visitBtnClass} mb-1" onclick="toggleVisit(${index})" title="Klik untuk visit atau ubah catatan pelayanan">
+                                ${visitBtnText}
+                            </button><br>
+                            <button class="btn btn-sm btn-outline-primary mb-1" onclick="editSupplier(${index})" title="Edit Supplier">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger mb-1" onclick="hapusSupplier(${index})" title="Hapus Supplier">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- FUNGSI BACKUP & RESTORE DATA ---
+        function backupData() {
+            const data = {
+                products: JSON.parse(localStorage.getItem('aromaku_products') || '[]'),
+                suppliers: JSON.parse(localStorage.getItem('aromaku_suppliers') || '[]'),
+                formulas: JSON.parse(localStorage.getItem('aromaku_formulas') || '[]'),
+                customNotes: localStorage.getItem('aromaku_custom_notes') || ''
+            };
+            const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "backup_aromaku_" + new Date().toISOString().slice(0,10) + ".json";
+            a.click();
+        }
+
+        function restoreData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm("Restore akan menimpa data yang ada saat ini dengan data cadangan. Lanjutkan?")) {
+                        localStorage.setItem('aromaku_products', JSON.stringify(data.products || []));
+                        localStorage.setItem('aromaku_suppliers', JSON.stringify(data.suppliers || []));
+                        localStorage.setItem('aromaku_formulas', JSON.stringify(data.formulas || []));
+                        localStorage.setItem('aromaku_custom_notes', data.customNotes || '');
+                        location.reload();
+                    }
+                } catch (err) { 
+                    alert("Format file tidak valid."); 
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+    
+<script>
+    // Registrasi Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(() => console.log('Service Worker Terdaftar'))
+            .catch(err => console.log('Gagal:', err));
+    }
+</script>
+</body>
+</html>
